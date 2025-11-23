@@ -1,0 +1,55 @@
+package com.example.goodsmanager.ui.settings;
+
+import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.goodsmanager.databinding.ActivitySettingsBinding;
+
+public class SettingsActivity extends AppCompatActivity {
+
+    private ActivitySettingsBinding binding;
+    private SettingsViewModel viewModel;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = ActivitySettingsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        setSupportActionBar(binding.toolbar);
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
+
+        viewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+
+        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()) {
+                viewModel.setDarkMode(isChecked);
+            }
+        });
+        binding.switchReminder.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()) {
+                viewModel.setReminder(isChecked);
+            }
+        });
+
+        viewModel.observeDarkMode().observe(this, enabled -> {
+            boolean value = Boolean.TRUE.equals(enabled);
+            if (binding.switchDarkMode.isChecked() != value) {
+                binding.switchDarkMode.setChecked(value);
+            }
+            AppCompatDelegate.setDefaultNightMode(value ?
+                    AppCompatDelegate.MODE_NIGHT_YES :
+                    AppCompatDelegate.MODE_NIGHT_NO);
+        });
+
+        viewModel.observeReminder().observe(this, enabled -> {
+            boolean value = Boolean.TRUE.equals(enabled);
+            if (binding.switchReminder.isChecked() != value) {
+                binding.switchReminder.setChecked(value);
+            }
+        });
+    }
+}
+
