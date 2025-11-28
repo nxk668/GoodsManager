@@ -35,6 +35,15 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.google.code.gson" && requested.name == "gson") {
+            useVersion(libs.versions.gson.get())
+            because("LeanCloud SDK requires Gson 2.8.x")
+        }
+    }
+}
+
 dependencies {
 
     implementation(libs.appcompat)
@@ -67,6 +76,10 @@ dependencies {
     implementation(libs.zxing)
     implementation(libs.mpchart)
     implementation(libs.coroutines.android)
+    implementation(libs.gson)
+    implementation(libs.leancloud.storage)
+    implementation(libs.rxjava)
+    implementation(libs.rxandroid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

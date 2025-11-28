@@ -11,12 +11,14 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.goodsmanager.GoodsManagerApp;
 import com.example.goodsmanager.R;
 import com.example.goodsmanager.core.Resource;
 import com.example.goodsmanager.data.local.entity.ItemEntity;
 import com.example.goodsmanager.data.model.StatisticsSnapshot;
 import com.example.goodsmanager.databinding.ActivityMainBinding;
 import com.example.goodsmanager.ui.borrow.BorrowManageActivity;
+import com.example.goodsmanager.ui.LauncherActivity;
 import com.example.goodsmanager.ui.item.ItemDetailActivity;
 import com.example.goodsmanager.ui.item.ItemEditActivity;
 import com.example.goodsmanager.ui.item.ItemListActivity;
@@ -43,12 +45,23 @@ public class MainActivity extends AppCompatActivity {
         setupClicks();
         observeViewModel();
         requestNotificationPermission();
+        viewModel.syncNow();
     }
 
     private void setupRecyclerView() {
         adapter = new RecentItemAdapter(this::openDetail);
         binding.recyclerRecent.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerRecent.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String userId = ((GoodsManagerApp) getApplication()).getAppContainer().sessionManager.getCurrentUserId();
+        if (userId == null) {
+            startActivity(new Intent(this, LauncherActivity.class));
+            finish();
+        }
     }
 
     private void setupClicks() {
@@ -60,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         binding.buttonRefreshTip.setOnClickListener(v -> viewModel.refreshTip());
         binding.swipeRefresh.setOnRefreshListener(() -> {
             viewModel.refreshTip();
+            viewModel.syncNow();
             binding.swipeRefresh.setRefreshing(false);
         });
     }

@@ -13,7 +13,7 @@ import com.example.goodsmanager.data.local.dao.ItemDao;
 import com.example.goodsmanager.data.local.entity.BorrowRecordEntity;
 import com.example.goodsmanager.data.local.entity.ItemEntity;
 
-@Database(entities = {ItemEntity.class, BorrowRecordEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {ItemEntity.class, BorrowRecordEntity.class}, version = 2, exportSchema = false)
 @TypeConverters(DateConverter.class)
 public abstract class GoodsDatabase extends RoomDatabase {
 

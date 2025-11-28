@@ -48,6 +48,9 @@
     <string name="msg_tip_loading">加载中…</string>
     <string name="msg_tip_error">加载失败，点击重试</string>
     <string name="msg_qr_empty">暂无二维码内容</string>
+    <string name="msg_permission_media_denied">需要相册权限才能选择图片</string>
+    <string name="msg_no_default_icon">请先在 assets/default_icons 中放入图片文件</string>
+    <string name="dialog_default_icon_title">选择默认图标</string>
     <string name="filter_title">快速筛选</string>
     <string name="filter_reset">重置</string>
     <string name="filter_apply">应用</string>
@@ -58,6 +61,16 @@
     <string name="settings_borrow_reminder">借用提醒</string>
     <string name="settings_about">关于项目</string>
     <string name="settings_about_desc">参考“归物”理念打造的个人物品管理工具</string>
+    <string name="settings_logout">退出登录</string>
     <string name="share_subject">来自归物+的物品二维码</string>
     <string name="share_text">请扫码快速登记此物品信息</string>
+    <string name="auth_login">登录</string>
+    <string name="auth_register">注册</string>
+    <string name="auth_switch_to_login">已有账号？点此登录</string>
+    <string name="auth_switch_to_register">没有账号？点此注册</string>
+    <string name="auth_username_hint">账号</string>
+    <string name="auth_password_hint">密码</string>
+    <string name="auth_confirm_hint">确认密码</string>
+    <string name="action_pick_photo">上传图片</string>
+    <string name="action_default_photo">使用默认图标</string>
 </resources>

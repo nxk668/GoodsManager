@@ -14,6 +14,21 @@ public class ItemEntity {
     @ColumnInfo(name = "id")
     private long id;
 
+    @ColumnInfo(name = "owner_id")
+    private String ownerId;
+
+    @ColumnInfo(name = "remote_id")
+    private String remoteId;
+
+    @ColumnInfo(name = "pending_sync")
+    private boolean pendingSync;
+
+    @ColumnInfo(name = "sync_action")
+    private String syncAction;
+
+    @ColumnInfo(name = "synced_at")
+    private long syncedAt;
+
     @ColumnInfo(name = "name")
     @NonNull
     private String name;
@@ -74,6 +89,10 @@ public class ItemEntity {
         this.note = "";
         this.qrPayload = "";
         this.remindTimestamp = 0L;
+        this.ownerId = "";
+        this.pendingSync = true;
+        this.syncAction = "ADD";
+        this.syncedAt = 0L;
     }
 
     public long getId() {
@@ -197,6 +216,46 @@ public class ItemEntity {
 
     public void setRemindTimestamp(long remindTimestamp) {
         this.remindTimestamp = remindTimestamp;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getRemoteId() {
+        return remoteId;
+    }
+
+    public void setRemoteId(String remoteId) {
+        this.remoteId = remoteId;
+    }
+
+    public boolean isPendingSync() {
+        return pendingSync;
+    }
+
+    public void setPendingSync(boolean pendingSync) {
+        this.pendingSync = pendingSync;
+    }
+
+    public String getSyncAction() {
+        return syncAction;
+    }
+
+    public void setSyncAction(String syncAction) {
+        this.syncAction = syncAction;
+    }
+
+    public long getSyncedAt() {
+        return syncedAt;
+    }
+
+    public void setSyncedAt(long syncedAt) {
+        this.syncedAt = syncedAt;
     }
 }
 

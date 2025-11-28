@@ -16,6 +16,9 @@ public class BorrowRecordEntity {
     @ColumnInfo(name = "item_id", index = true)
     private long itemId;
 
+    @ColumnInfo(name = "item_remote_id")
+    private String itemRemoteId;
+
     @ColumnInfo(name = "borrower_name")
     private String borrowerName;
 
@@ -34,11 +37,31 @@ public class BorrowRecordEntity {
     @ColumnInfo(name = "status")
     private String status;
 
+    @ColumnInfo(name = "owner_id")
+    private String ownerId;
+
+    @ColumnInfo(name = "remote_id")
+    private String remoteId;
+
+    @ColumnInfo(name = "pending_sync")
+    private boolean pendingSync;
+
+    @ColumnInfo(name = "sync_action")
+    private String syncAction;
+
+    @ColumnInfo(name = "synced_at")
+    private long syncedAt;
+
     public BorrowRecordEntity(long itemId, String borrowerName) {
         this.itemId = itemId;
         this.borrowerName = borrowerName;
         this.borrowDate = new Date();
         this.status = "借出中";
+        this.ownerId = "";
+        this.pendingSync = true;
+        this.syncAction = "ADD";
+        this.syncedAt = 0L;
+        this.itemRemoteId = "";
     }
 
     public long getId() {
@@ -103,6 +126,54 @@ public class BorrowRecordEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getItemRemoteId() {
+        return itemRemoteId;
+    }
+
+    public void setItemRemoteId(String itemRemoteId) {
+        this.itemRemoteId = itemRemoteId;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getRemoteId() {
+        return remoteId;
+    }
+
+    public void setRemoteId(String remoteId) {
+        this.remoteId = remoteId;
+    }
+
+    public boolean isPendingSync() {
+        return pendingSync;
+    }
+
+    public void setPendingSync(boolean pendingSync) {
+        this.pendingSync = pendingSync;
+    }
+
+    public String getSyncAction() {
+        return syncAction;
+    }
+
+    public void setSyncAction(String syncAction) {
+        this.syncAction = syncAction;
+    }
+
+    public long getSyncedAt() {
+        return syncedAt;
+    }
+
+    public void setSyncedAt(long syncedAt) {
+        this.syncedAt = syncedAt;
     }
 }
 

@@ -1,22 +1,38 @@
 package com.example.goodsmanager.ui.item;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.goodsmanager.R;
 import com.example.goodsmanager.data.local.entity.ItemEntity;
 import com.example.goodsmanager.databinding.ActivityItemEditBinding;
 import com.example.goodsmanager.utils.DateFormatUtils;
+import com.example.goodsmanager.utils.ImageLoader;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class ItemEditActivity extends AppCompatActivity {
 
@@ -25,6 +41,9 @@ public class ItemEditActivity extends AppCompatActivity {
     private ActivityItemEditBinding binding;
     private ItemEditViewModel viewModel;
     private ItemEntity editingEntity;
+    private String selectedImageUri;
+    private ActivityResultLauncher<String> imagePickerLauncher;
+    private ActivityResultLauncher<String> permissionLauncher;
 
     public static void start(Context context, long itemId) {
         Intent intent = new Intent(context, ItemEditActivity.class);
@@ -56,6 +75,8 @@ public class ItemEditActivity extends AppCompatActivity {
         binding.inputWarranty.setOnClickListener(v -> showDatePicker(binding.inputWarranty));
         binding.buttonSave.setOnClickListener(v -> save());
         binding.buttonDelete.setOnClickListener(v -> confirmDelete());
+        setupCategoryDropdown();
+        setupImagePickers();
     }
 
     private void fillForm(ItemEntity entity) {
@@ -71,6 +92,8 @@ public class ItemEditActivity extends AppCompatActivity {
         binding.inputWarranty.setText(DateFormatUtils.format(entity.getWarrantyEnd()));
         binding.checkboxFavorite.setChecked(entity.isFavorite());
         binding.inputNote.setText(entity.getNote());
+        selectedImageUri = entity.getPhotoUri();
+        updatePhotoPreview();
     }
 
     private void showDatePicker(com.google.android.material.textfield.TextInputEditText target) {
@@ -103,6 +126,7 @@ public class ItemEditActivity extends AppCompatActivity {
         entity.setFavorite(binding.checkboxFavorite.isChecked());
         entity.setNote(getText(binding.inputNote));
         entity.setQrPayload(entity.getName() + "|" + entity.getCategory() + "|" + entity.getLocationZone());
+        entity.setPhotoUri(selectedImageUri);
 
         viewModel.save(entity);
         Toast.makeText(this, R.string.msg_saved, Toast.LENGTH_SHORT).show();
@@ -130,7 +154,7 @@ public class ItemEditActivity extends AppCompatActivity {
                 .show();
     }
 
-    private String getText(com.google.android.material.textfield.TextInputEditText editText) {
+    private String getText(android.widget.TextView editText) {
         return editText.getText() == null ? "" : editText.getText().toString();
     }
 
@@ -146,6 +170,122 @@ public class ItemEditActivity extends AppCompatActivity {
             return Double.parseDouble(str);
         } catch (NumberFormatException e) {
             return 0;
+        }
+    }
+
+    private void setupCategoryDropdown() {
+        String[] categories = getResources().getStringArray(R.array.item_categories);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Arrays.asList(categories));
+        binding.inputCategory.setAdapter(adapter);
+        if (editingEntity == null && categories.length > 0) {
+            binding.inputCategory.setText(categories[0], false);
+        }
+        binding.inputCategory.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                binding.inputCategory.showDropDown();
+            }
+        });
+        binding.inputCategory.setOnClickListener(v -> binding.inputCategory.showDropDown());
+    }
+
+    private void setupImagePickers() {
+        imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                persistUriPermission(uri);
+                selectedImageUri = uri.toString();
+                updatePhotoPreview();
+            }
+        });
+        permissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+            if (granted) {
+                openImagePicker();
+            } else {
+                Toast.makeText(this, R.string.msg_permission_media_denied, Toast.LENGTH_SHORT).show();
+            }
+        });
+        binding.buttonPickPhoto.setOnClickListener(v -> requestMediaPermissionThenPick());
+        binding.buttonDefaultPhoto.setOnClickListener(v -> showDefaultIconDialog());
+    }
+
+    private void requestMediaPermissionThenPick() {
+        String permission = getMediaPermission();
+        if (permission == null || ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+            openImagePicker();
+        } else {
+            permissionLauncher.launch(permission);
+        }
+    }
+
+    private void openImagePicker() {
+        imagePickerLauncher.launch("image/*");
+    }
+
+    private String getMediaPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return Manifest.permission.READ_MEDIA_IMAGES;
+        } else {
+            return Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+    }
+
+    private void updatePhotoPreview() {
+        if (selectedImageUri == null || selectedImageUri.isEmpty()) {
+            binding.imagePhoto.setImageResource(R.drawable.ic_placeholder);
+        } else {
+            ImageLoader.load(binding.imagePhoto, selectedImageUri);
+        }
+    }
+
+    private void showDefaultIconDialog() {
+        try {
+            String[] icons = getAssets().list("default_icons");
+            if (icons == null || icons.length == 0) {
+                Toast.makeText(this, R.string.msg_no_default_icon, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_default_icon_title)
+                    .setItems(icons, (dialog, which) -> {
+                        Uri uri = copyAssetIcon(icons[which]);
+                        if (uri != null) {
+                            selectedImageUri = uri.toString();
+                            updatePhotoPreview();
+                        }
+                    })
+                    .show();
+        } catch (IOException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Uri copyAssetIcon(String fileName) {
+        File dir = new File(getFilesDir(), "default_icons");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File outFile = new File(dir, fileName);
+        try (InputStream in = getAssets().open("default_icons/" + fileName);
+             FileOutputStream out = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[2048];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+            return Uri.fromFile(outFile);
+        } catch (IOException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
+    private void persistUriPermission(Uri uri) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            ContentResolver resolver = getContentResolver();
+            try {
+                resolver.takePersistableUriPermission(uri, flags);
+            } catch (SecurityException ignored) {
+            }
         }
     }
 }

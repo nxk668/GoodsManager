@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="item_categories">
+        <item>数码设备</item>
+        <item>旅行露营</item>
+        <item>家居日用</item>
+        <item>学习办公</item>
+        <item>收藏纪念</item>
+        <item>运动健康</item>
+        <item>其它</item>
+    </string-array>
+</resources>
+

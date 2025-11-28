@@ -44,5 +44,9 @@ public class MainViewModel extends AndroidViewModel {
     public void refreshTip() {
         repository.refreshTip();
     }
+
+    public void syncNow() {
+        repository.triggerSync();
+    }
 }
 

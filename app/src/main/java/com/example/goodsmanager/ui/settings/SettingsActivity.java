@@ -1,5 +1,6 @@
 package com.example.goodsmanager.ui.settings;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.goodsmanager.databinding.ActivitySettingsBinding;
+import com.example.goodsmanager.ui.LauncherActivity;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -32,6 +34,13 @@ public class SettingsActivity extends AppCompatActivity {
             if (buttonView.isPressed()) {
                 viewModel.setReminder(isChecked);
             }
+        });
+        binding.buttonLogout.setOnClickListener(v -> {
+            viewModel.logout();
+            Intent intent = new Intent(this, LauncherActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finishAffinity();
         });
 
         viewModel.observeDarkMode().observe(this, enabled -> {

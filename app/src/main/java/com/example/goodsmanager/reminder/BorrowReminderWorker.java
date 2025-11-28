@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.example.goodsmanager.GoodsManagerApp;
 import com.example.goodsmanager.R;
-import com.example.goodsmanager.data.local.GoodsDatabase;
 import com.example.goodsmanager.data.local.entity.BorrowRecordEntity;
 import com.example.goodsmanager.utils.NotificationHelper;
 
@@ -24,9 +24,13 @@ public class BorrowReminderWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        GoodsDatabase database = GoodsDatabase.getInstance(getApplicationContext());
+        GoodsManagerApp app = (GoodsManagerApp) getApplicationContext();
+        String ownerId = app.getAppContainer().sessionManager.getCurrentUserId();
+        if (ownerId == null) {
+            return Result.success();
+        }
         Date deadline = new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
-        List<BorrowRecordEntity> dueRecords = database.borrowRecordDao().getDueRecords(deadline);
+        List<BorrowRecordEntity> dueRecords = app.getAppContainer().itemRepository.getDueRecords(deadline);
         if (dueRecords != null && !dueRecords.isEmpty()) {
             int count = dueRecords.size();
             String content = getApplicationContext().getString(R.string.notification_due_borrow, count);

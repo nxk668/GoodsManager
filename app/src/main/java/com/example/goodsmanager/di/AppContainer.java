@@ -2,10 +2,13 @@ package com.example.goodsmanager.di;
 
 import android.content.Context;
 
+import com.example.goodsmanager.auth.AuthRepository;
 import com.example.goodsmanager.data.local.GoodsDatabase;
 import com.example.goodsmanager.data.repository.ItemRepository;
 import com.example.goodsmanager.data.repository.UserPreferencesRepository;
 import com.example.goodsmanager.network.TipService;
+import com.example.goodsmanager.session.SessionManager;
+import com.example.goodsmanager.sync.LeanSyncManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,13 +23,19 @@ public class AppContainer {
 
     public final ItemRepository itemRepository;
     public final UserPreferencesRepository preferencesRepository;
+    public final SessionManager sessionManager;
+    public final AuthRepository authRepository;
+    public final LeanSyncManager syncManager;
 
     public AppContainer(Context context) {
         Context appContext = context.getApplicationContext();
         GoodsDatabase database = GoodsDatabase.getInstance(appContext);
         TipService tipService = buildRetrofit().create(TipService.class);
-        itemRepository = new ItemRepository(database.itemDao(), database.borrowRecordDao(), tipService);
+        sessionManager = new SessionManager(appContext);
+        syncManager = new LeanSyncManager(database.itemDao(), database.borrowRecordDao());
+        itemRepository = new ItemRepository(database.itemDao(), database.borrowRecordDao(), tipService, sessionManager, syncManager);
         preferencesRepository = new UserPreferencesRepository(appContext);
+        authRepository = new AuthRepository(sessionManager);
     }
 
     private Retrofit buildRetrofit() {
